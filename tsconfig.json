@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    // 1. File Layout (Enabled to run with src/ and dist/)
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // 2. Environment Settings (Standardized for ES Modules)
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+
+    // 3. Other Outputs (Supports debugging and type definition)
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // 4. Stricter Typechecking Options (Makes code extremely secure)
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // 5. Recommended Options
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+
+    "types": ["node"],
+
+    // Specify the path for scanning custom types.
+    "typeRoots": ["./node_modules/@types", "./src/@types"]
+  },
+
+  "ts-node": {
+    "esm": true
+  },
+
+  // Force TypeScript to group all files in the src directory into its view.
+  "include": ["src/**/*"]
+}
