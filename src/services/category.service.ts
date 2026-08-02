@@ -1,0 +1,153 @@
+import { Category, type ICategory } from '../models/category.model.js';
+import { deleteImage, uploadImage } from './cloudinary.service.js';
+import { AppError } from '../utils/AppError.js';
+import type {
+  CreateCategoryInput,
+  UpdateCategoryInput,
+} from '../validations/product.validation.js';
+import { Product } from '../models/product.model.js';
+
+// ==========================================
+// QUERIES
+// ==========================================
+
+/**
+ * Retrieves the category tree structure (up to 3 levels deep).
+ * Uses .populate() with match/options to ensure only active items appear.
+ */
+export const getCategoryTree = async (): Promise<ICategory[]> => {
+  const categories = await Category.find({ parent: null, isActive: true })
+    .sort({ sortOrder: 1, name: 1 })
+    .populate({
+      path: 'children',
+      match: { isActive: true },
+      options: { sort: { sortOrder: 1 } },
+      populate: {
+        path: 'children',
+        match: { isActive: true },
+        options: { sort: { sortOrder: 1 } },
+      },
+    })
+    .lean();
+
+  return categories as unknown as ICategory[];
+};
+
+/**
+ * Retrieves a flat list of all categories. Useful for Admin dashboards.
+ */
+export const getAllCategories = async (includeInactive = false) => {
+  const filter = includeInactive ? {} : { isActive: true };
+  return Category.find(filter)
+    .select('-__v')
+    .sort({ level: 1, sortOrder: 1, name: 1 })
+    .lean();
+};
+
+export const getCategoryById = async (id: string) => {
+  const category = await Category.findById(id).populate('children').lean();
+  if (!category) throw new AppError('Category not found', 404);
+  return category;
+};
+
+// ==========================================
+// MUTATIONS
+// ==========================================
+
+export const createCategory = async (
+  data: CreateCategoryInput,
+  imageFile?: Express.Multer.File
+): Promise<ICategory> => {
+  // Validate parent hierarchy depth
+  if (data.parent) {
+    const parentExists = await Category.findById(data.parent);
+    if (!parentExists) throw new AppError('Parent category does not exist', 404);
+    if (parentExists.level >= 2) {
+      throw new AppError('Categories only support up to 3 levels deep', 400);
+    }
+  }
+
+  let image: string | undefined;
+  if (imageFile) {
+    const result = await uploadImage(imageFile.buffer, 'categories', {
+      width: 600,
+      height: 400,
+    });
+    image = result.secure_url;
+  }
+
+  return await Category.create({ ...data, image } as any);
+};
+
+export const updateCategory = async (
+  id: string,
+  data: UpdateCategoryInput,
+  imageFile?: Express.Multer.File
+): Promise<ICategory> => {
+  const category = await Category.findById(id);
+  if (!category) throw new AppError('Category not found', 404);
+
+  // Prevent cyclical or invalid parent assignments
+  if (data.parent) {
+    if (data.parent === id) throw new AppError('Category cannot be its own parent', 400);
+    
+    const parentExists = await Category.findById(data.parent);
+    if (!parentExists) throw new AppError('Parent category does not exist', 404);
+    
+    // Ensure parent is not actually a child of this category
+    const isDescendant = parentExists.ancestors.some(a => a._id.toString() === id);
+    if (isDescendant) throw new AppError('Cannot set a descendant as the parent', 400);
+  }
+
+  // Handle Image Update: Delete old, Upload new
+  if (imageFile) {
+    if (category.image) {
+      const publicId = extractPublicId(category.image);
+      if (publicId) await deleteImage(publicId);
+    }
+    const result = await uploadImage(imageFile.buffer, 'categories', {
+      width: 600,
+      height: 400,
+    });
+    category.image = result.secure_url;
+  }
+
+  Object.assign(category, data);
+  await category.save();
+  return category;
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  const category = await Category.findById(id);
+  if (!category) throw new AppError('Category not found', 404);
+
+  // Protection: Prevent deletion if children exist
+  const childCount = await Category.countDocuments({ parent: id });
+  if (childCount > 0) {
+    throw new AppError(`Category has ${childCount} sub-categories. Please delete children first.`, 400);
+  }
+
+  // Protection: Prevent deletion if products are assigned
+  // Note: We check even archived/inactive products to maintain integrity
+  const productCount = await Product.countDocuments({ category: id });
+  if (productCount > 0) {
+    throw new AppError(`Category has ${productCount} products assigned. Move them first.`, 400);
+  }
+
+  if (category.image) {
+    const publicId = extractPublicId(category.image);
+    if (publicId) await deleteImage(publicId).catch(() => {});
+  }
+
+  await category.deleteOne();
+};
+
+// ==========================================
+// UTILS
+// ==========================================
+
+const extractPublicId = (url: string): string | null => {
+  // Regex to extract Cloudinary path: /upload/v123/path/to/image.jpg -> path/to/image
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+  return match && match[1] ? match[1] : null;
+};
