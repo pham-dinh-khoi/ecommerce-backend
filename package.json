@@ -22,7 +22,6 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
@@ -31,7 +30,6 @@
     "nodemailer": "^9.0.3",
     "redis": "^6.1.0",
     "slugify": "^1.6.9",
-    "stripe": "^22.3.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
