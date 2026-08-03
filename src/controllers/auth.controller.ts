@@ -86,7 +86,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
     message: 'Login successful',
     data: {
       accessToken: tokens.accessToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user,
     },
   });
 });
