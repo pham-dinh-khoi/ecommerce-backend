@@ -2,8 +2,8 @@ import rateLimit from 'express-rate-limit';
 import { env } from '../config/env.config.js';
 
 // ==========================================
-// GLOBAL LIMITER — lưới an toàn cuối cùng cho toàn bộ /api
-// Production: chặt hơn. Development: nới lỏng hẳn để không cản trở việc test.
+// GLOBAL LIMITER — Ultimate safety net for the entire /api
+// Production: stricter. Development: relaxed completely to avoid hindering testing.
 // ==========================================
 
 export const globalLimiter = rateLimit({
@@ -71,8 +71,8 @@ export const forgotPasswordLimiter = rateLimit({
 
 // ==========================================
 // PAYMENT INITIATE LIMITER
-// Giao dịch tiền — không cần chặt như login, nhưng vẫn cần chặn spam tạo
-// payment URL liên tục (mỗi lần gọi tốn 1 request thật tới cổng thanh toán ngoài).
+// Financial transactions — doesn't need to be as strict as login, but still needs to block spam
+// of continuous payment URL generation (each call costs a real request to the external payment gateway).
 // ==========================================
 
 export const paymentInitiateLimiter = rateLimit({
@@ -88,7 +88,7 @@ export const paymentInitiateLimiter = rateLimit({
 
 // ==========================================
 // COUPON PREVIEW LIMITER
-// Chống dò mã coupon hàng loạt (thử nhiều mã liên tiếp để tìm mã hợp lệ).
+// Prevents brute-forcing coupon codes in bulk (trying multiple codes sequentially to find a valid one).
 // ==========================================
 
 export const couponPreviewLimiter = rateLimit({
@@ -104,7 +104,7 @@ export const couponPreviewLimiter = rateLimit({
 
 // ==========================================
 // REVIEW CREATE LIMITER
-// Chống spam đăng review hàng loạt.
+// Prevents bulk review submission spam.
 // ==========================================
 
 export const reviewCreateLimiter = rateLimit({
@@ -120,26 +120,26 @@ export const reviewCreateLimiter = rateLimit({
 
 // ==========================================
 // SEARCH LIMITER
-// Tìm kiếm sản phẩm — tần suất tự nhiên khá cao nhưng vẫn cần chặn bot cào dữ liệu.
+// Product search — natural frequency is quite high, but still needs to block web scraping bots.
 // ==========================================
 
 export const searchLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
-  message: { success: false, message: 'Quá nhiều yêu cầu tìm kiếm, vui lòng thử lại' },
+  message: { success: false, message: 'Too many search requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 // ==========================================
 // AUTOCOMPLETE LIMITER
-// Gọi mỗi keystroke — cần giới hạn lỏng nhất trong nhóm search.
+// Triggered on every keystroke — needs to be the loosest limit within the search group.
 // ==========================================
 
 export const autocompleteLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 120,
-  message: { success: false, message: 'Quá nhiều yêu cầu' },
+  message: { success: false, message: 'Too many requests' },
   standardHeaders: true,
   legacyHeaders: false,
 });
