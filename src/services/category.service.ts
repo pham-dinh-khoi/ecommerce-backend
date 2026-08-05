@@ -110,8 +110,18 @@ export const updateCategory = async (
     category.image = { url: result.secure_url, publicId: result.public_id };
   }
 
+  // Save the OLD name/slug before overwriting, to ensure the change is genuine.
+  const oldName = category.name;
+  const oldSlug = category.slug;
+
   Object.assign(category, data);
-  await category.save();
+  await category.save(); // pre('save') automatically generates a new slug if the name changes.
+
+  // Nếu tên hoặc slug thực sự thay đổi, cascade cập nhật xuống toàn bộ con cháu
+  if (category.name !== oldName || category.slug !== oldSlug) {
+    await cascadeUpdateAncestors(category);
+  }
+
   return category;
 };
 
@@ -140,4 +150,24 @@ export const deleteCategory = async (id: string): Promise<void> => {
   }
 
   await category.deleteOne();
+};
+
+/**
+ * Cascade update: When a Category changes its name/slug, update the corresponding element
+ * in the "ancestors" array of ALL descendants (at all levels), so that
+ * the breadcrumb always displays correctly and doesn't become "outdated".
+ */
+const cascadeUpdateAncestors = async (updatedCategory: ICategory): Promise<void> => {
+  // Find all categories that contain updatedCategory in their "ancestors" (children, grandchildren, at all levels).
+  const descendants = await Category.find({ 'ancestors._id': updatedCategory._id });
+
+  for (const descendant of descendants) {
+    // Update the ancestors element that matches the _id, keeping the other elements unchanged.
+    descendant.ancestors = descendant.ancestors.map(a =>
+      a._id.toString() === updatedCategory._id.toString()
+        ? { _id: updatedCategory._id, name: updatedCategory.name, slug: updatedCategory.slug }
+        : a
+    );
+    await descendant.save({ validateBeforeSave: false }); // tránh trigger lại pre('save') tính ancestors từ parent (không cần thiết ở đây)
+  }
 };
