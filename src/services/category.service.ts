@@ -38,10 +38,7 @@ export const getCategoryTree = async (): Promise<ICategory[]> => {
  */
 export const getAllCategories = async (includeInactive = false) => {
   const filter = includeInactive ? {} : { isActive: true };
-  return Category.find(filter)
-    .select('-__v')
-    .sort({ level: 1, sortOrder: 1, name: 1 })
-    .lean();
+  return Category.find(filter).select('-__v').sort({ level: 1, sortOrder: 1, name: 1 }).lean();
 };
 
 export const getCategoryById = async (id: string) => {
@@ -67,13 +64,13 @@ export const createCategory = async (
     }
   }
 
-  let image: string | undefined;
+  let image: { url: string; publicId: string } | undefined;
   if (imageFile) {
     const result = await uploadImage(imageFile.buffer, 'categories', {
       width: 600,
       height: 400,
     });
-    image = result.secure_url;
+    image = { url: result.secure_url, publicId: result.public_id };
   }
 
   return await Category.create({ ...data, image } as any);
@@ -90,10 +87,10 @@ export const updateCategory = async (
   // Prevent cyclical or invalid parent assignments
   if (data.parent) {
     if (data.parent === id) throw new AppError('Category cannot be its own parent', 400);
-    
+
     const parentExists = await Category.findById(data.parent);
     if (!parentExists) throw new AppError('Parent category does not exist', 404);
-    
+
     // Ensure parent is not actually a child of this category
     const isDescendant = parentExists.ancestors.some(a => a._id.toString() === id);
     if (isDescendant) throw new AppError('Cannot set a descendant as the parent', 400);
@@ -102,14 +99,15 @@ export const updateCategory = async (
   // Handle Image Update: Delete old, Upload new
   if (imageFile) {
     if (category.image) {
-      const publicId = extractPublicId(category.image);
-      if (publicId) await deleteImage(publicId);
+      if (category.image?.publicId) {
+        await deleteImage(category.image.publicId).catch(() => {});
+      }
     }
     const result = await uploadImage(imageFile.buffer, 'categories', {
       width: 600,
       height: 400,
     });
-    category.image = result.secure_url;
+    category.image = { url: result.secure_url, publicId: result.public_id };
   }
 
   Object.assign(category, data);
@@ -124,7 +122,10 @@ export const deleteCategory = async (id: string): Promise<void> => {
   // Protection: Prevent deletion if children exist
   const childCount = await Category.countDocuments({ parent: id });
   if (childCount > 0) {
-    throw new AppError(`Category has ${childCount} sub-categories. Please delete children first.`, 400);
+    throw new AppError(
+      `Category has ${childCount} sub-categories. Please delete children first.`,
+      400
+    );
   }
 
   // Protection: Prevent deletion if products are assigned
@@ -134,20 +135,9 @@ export const deleteCategory = async (id: string): Promise<void> => {
     throw new AppError(`Category has ${productCount} products assigned. Move them first.`, 400);
   }
 
-  if (category.image) {
-    const publicId = extractPublicId(category.image);
-    if (publicId) await deleteImage(publicId).catch(() => {});
+  if (category.image?.publicId) {
+    await deleteImage(category.image.publicId).catch(() => {});
   }
 
   await category.deleteOne();
-};
-
-// ==========================================
-// UTILS
-// ==========================================
-
-const extractPublicId = (url: string): string | null => {
-  // Regex to extract Cloudinary path: /upload/v123/path/to/image.jpg -> path/to/image
-  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
-  return match && match[1] ? match[1] : null;
 };

@@ -1,12 +1,18 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import slugify from 'slugify';
 
+// Define the interface for CategoryImage documents
+export interface ICategoryImage {
+  url: string;
+  publicId: string;
+}
+
 // Define the interface for Category documents
 export interface ICategory extends Document {
   name: string;
   slug: string;
   description?: string;
-  image?: string;
+  image?: ICategoryImage;
   parent?: mongoose.Types.ObjectId; // Reference to the immediate parent
   ancestors: Array<{ _id: mongoose.Types.ObjectId; name: string; slug: string }>; // Materialized path
   level: number; // Depth in the tree
@@ -33,7 +39,10 @@ const CategorySchema = new Schema<ICategory>(
       type: String,
       maxlength: [500, 'Description of no more than 500 characters'],
     },
-    image: String,
+    image: {
+      url: String,
+      publicId: String,
+    },
     parent: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
