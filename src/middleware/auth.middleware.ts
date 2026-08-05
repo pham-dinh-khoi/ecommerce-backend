@@ -69,7 +69,7 @@ export const optionalAuth = catchAsync(
 
       const decoded = verifyAccessToken(token);
       const user = await User.findById(decoded.userId);
-      
+
       // If user exists and is active, attach to request; otherwise continue as guest
       if (user && user.isActive) {
         req.user = { userId: decoded.userId, role: decoded.role };
@@ -102,10 +102,10 @@ export const restrictTo =
  */
 export const restrictToSelfOrAdmin = (req: AuthRequest, _res: Response, next: NextFunction) => {
   const targetId = req.params.id || req.params.userId;
-  
+
   if (req.user?.role === 'admin' || req.user?.userId === targetId) {
     return next();
   }
-  
-  next(new AppError('Không có quyền truy cập', 403));
+
+  next(new AppError('You do not have permission to access this resource', 403));
 };
