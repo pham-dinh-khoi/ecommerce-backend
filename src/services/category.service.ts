@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import type {
   CreateCategoryInput,
   UpdateCategoryInput,
-} from '../validations/product.validation.js';
+} from '../validations/category.validation.js';
 import { Product } from '../models/product.model.js';
 
 // ==========================================
