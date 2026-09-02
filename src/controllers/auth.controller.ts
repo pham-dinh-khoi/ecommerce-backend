@@ -149,7 +149,7 @@ export const changePassword = catchAsync(async (req: AuthRequest, res: Response)
 // Forgot / Reset Password
 export const forgotPassword = catchAsync(async (req: Request, res: Response) => {
   const data = forgotPasswordSchema.parse(req.body);
-  authService.forgotPassword(data);
+  await authService.forgotPassword(data);
 
   // Always send the same message regardless of whether the email address exists or not (avoids user enumeration)
   res.json({
