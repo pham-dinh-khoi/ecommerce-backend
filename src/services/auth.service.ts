@@ -207,25 +207,22 @@ export const forgotPassword = async (
 ): Promise<void> => {
   const user = await User.findOne({ email: data.email });
 
-  // Do not reveal whether an account exists.
   if (!user) return;
 
   const resetToken = user.createPasswordResetToken();
   await user.save();
 
-  try {
-    await sendPasswordResetEmail(
-      user.email,
-      user.name,
-      resetToken
-    );
-  } catch (error) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
+  sendPasswordResetEmail(user.email, user.name, resetToken).catch(async err => {
+    console.error('Password reset email failed:', err);
 
-    console.error('Password reset email failed:', error);
-  }
+    try {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save();
+    } catch (dbErr) {
+      console.error('Critical DB rollback failure:', dbErr);
+    }
+  });
 };
 
 export const resetPassword = async (data: ResetPasswordInput): Promise<void> => {
