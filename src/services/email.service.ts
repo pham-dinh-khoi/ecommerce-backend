@@ -10,12 +10,12 @@ import { env } from '../config/env.config.js';
  * Uses environment variables for security credentials.
  */
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  host: env.SMTP_HOST,
+  port: Number(env.SMTP_PORT),
   secure: false,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
   family: 4,
 } as nodemailer.TransportOptions);
