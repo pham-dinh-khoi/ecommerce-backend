@@ -1,8 +1,8 @@
 import { Cart } from '../models/cart.model.js';
 import { Product } from '../models/product.model.js';
 import { getSessionCart, sessionClearCart } from './session-cart.service.js';
-import { getCart, formatPersistentCart, syncCartPrices } from './persistent-cart.service.js';
-import type { CartResult, ISessionCartItem } from '../@types/cart.types.js';
+import { formatPersistentCart, syncCartPrices } from './persistent-cart.service.js';
+import type { CartResult } from '../@types/cart.types.js';
 
 export type MergeStrategy = 'add' | 'keep_max' | 'prefer_db';
 

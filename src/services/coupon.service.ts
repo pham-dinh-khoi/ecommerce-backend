@@ -7,7 +7,6 @@ import type { PaginationResult } from '../@types/product.types.js';
 import type {
   CreateCouponInput,
   UpdateCouponInput,
-  ApplyCouponInput,
   CouponQueryInput,
 } from '../validations/coupon.validation.js';
 
@@ -62,10 +61,7 @@ const validateDateRange = (coupon: ICoupon): void => {
     );
   }
   if (now > coupon.endDate) {
-    throw new AppError(
-      `Coupon expired on ${coupon.endDate.toLocaleDateString('vi-VN')}`,
-      400
-    );
+    throw new AppError(`Coupon expired on ${coupon.endDate.toLocaleDateString('vi-VN')}`, 400);
   }
 };
 
@@ -204,7 +200,7 @@ const calculateDiscount = (
         if (discount.getProductId) {
           return item.productId === discount.getProductId.toString();
         }
-        return true; 
+        return true;
       });
 
       const freeItems: CouponApplyResult['freeItems'] = [];
@@ -425,12 +421,7 @@ export const getCoupons = async (
   const sortOpt = sortMap[sort] ?? { createdAt: -1 as const };
 
   const [coupons, total] = await Promise.all([
-    Coupon.find(filter)
-      .select('-usageHistory') 
-      .sort(sortOpt)
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+    Coupon.find(filter).select('-usageHistory').sort(sortOpt).skip(skip).limit(limit).lean(),
     Coupon.countDocuments(filter),
   ]);
 
@@ -450,7 +441,7 @@ export const getCouponById = async (id: string): Promise<ICoupon> => {
 export const updateCoupon = async (id: string, input: UpdateCouponInput): Promise<ICoupon> => {
   const coupon = await Coupon.findById(id);
   if (!coupon) throw new AppError('Coupon not found', 404);
-  
+
   // Prevent modification of discount values if the coupon has already been used
   if (coupon.limits.usedCount > 0 && input.discountAmount !== undefined) {
     throw new AppError('Cannot modify discount value for a coupon that has been used', 400);
@@ -470,7 +461,7 @@ export const updateCoupon = async (id: string, input: UpdateCouponInput): Promis
 export const deleteCoupon = async (id: string): Promise<void> => {
   const coupon = await Coupon.findById(id);
   if (!coupon) throw new AppError('Coupon not found', 404);
-  
+
   if (coupon.limits.usedCount > 0) {
     // Soft delete if already used to maintain usage history
     coupon.isActive = false;

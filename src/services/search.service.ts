@@ -1,8 +1,8 @@
 /**
  * SEARCH SERVICE
- * 
+ *
  * This service handles high-performance product searching, filtering, and aggregation.
- * It integrates MongoDB for data storage and Redis for result caching to minimize 
+ * It integrates MongoDB for data storage and Redis for result caching to minimize
  * database load.
  */
 
@@ -23,9 +23,9 @@ import type { PaginationResult } from '../@types/product.types.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-// Cache duration set to 5 minutes as search results are typically high-traffic 
+// Cache duration set to 5 minutes as search results are typically high-traffic
 // but don't require real-time freshness.
-const CACHE_TTL = 60 * 5; 
+const CACHE_TTL = 60 * 5;
 const CACHE_PREFIX = 'search:';
 
 // Defined fields to project, ensuring we only fetch necessary data for the frontend
@@ -136,14 +136,22 @@ const buildSortStage = (
     case 'relevance':
       // 'textScore' requires an existing $text index match
       return hasKeyword ? { score: { $meta: 'textScore' }, soldCount: -1 } : { soldCount: -1 };
-    case 'price_asc': return { minPrice: 1, createdAt: -1 };
-    case 'price_desc': return { minPrice: -1, createdAt: -1 };
-    case 'rating': return { 'rating.average': -1, 'rating.count': -1 };
-    case 'sold': return { soldCount: -1, 'rating.average': -1 };
-    case 'newest': return { createdAt: -1 };
-    case 'name_asc': return { name: 1 };
-    case 'discount': return { discountPercent: -1, soldCount: -1 };
-    default: return { createdAt: -1 };
+    case 'price_asc':
+      return { minPrice: 1, createdAt: -1 };
+    case 'price_desc':
+      return { minPrice: -1, createdAt: -1 };
+    case 'rating':
+      return { 'rating.average': -1, 'rating.count': -1 };
+    case 'sold':
+      return { soldCount: -1, 'rating.average': -1 };
+    case 'newest':
+      return { createdAt: -1 };
+    case 'name_asc':
+      return { name: 1 };
+    case 'discount':
+      return { discountPercent: -1, soldCount: -1 };
+    default:
+      return { createdAt: -1 };
   }
 };
 
@@ -189,13 +197,15 @@ export const searchProducts = async (query: SearchQuery): Promise<SearchResponse
     const cached = await redisGet(cacheKey);
     if (cached) {
       const result = JSON.parse(cached) as SearchResponse;
-      result.query.took = 0; 
+      result.query.took = 0;
       return result;
     }
-  } catch { /* Fail gracefully if Redis is down */ }
+  } catch {
+    /* Fail gracefully if Redis is down */
+  }
 
   // 2. Resolve hierarchical category IDs
-  let resolvedQuery = { ...query };
+  const resolvedQuery = { ...query };
   if (query.categoryIds?.length === 1) {
     const categoryId = query.categoryIds[0];
     if (categoryId) {
@@ -210,7 +220,7 @@ export const searchProducts = async (query: SearchQuery): Promise<SearchResponse
   const skip = (query.page - 1) * query.limit;
 
   const addFieldsStages: any[] = [];
-  
+
   // Dynamic calculation for discount percentage if sorting by discount
   if (query.sort === 'discount') {
     addFieldsStages.push({
@@ -275,11 +285,25 @@ export const searchProducts = async (query: SearchQuery): Promise<SearchResponse
     ];
 
     facetStages.priceFacets = [
-      { $group: { _id: null, min: { $min: '$minPrice' }, max: { $max: '$minPrice' }, avg: { $avg: '$minPrice' } } },
+      {
+        $group: {
+          _id: null,
+          min: { $min: '$minPrice' },
+          max: { $max: '$minPrice' },
+          avg: { $avg: '$minPrice' },
+        },
+      },
     ];
 
     facetStages.ratingFacets = [
-      { $bucket: { groupBy: '$rating.average', boundaries: [0, 1, 2, 3, 4, 5], default: 'other', output: { count: { $sum: 1 } } } },
+      {
+        $bucket: {
+          groupBy: '$rating.average',
+          boundaries: [0, 1, 2, 3, 4, 5],
+          default: 'other',
+          output: { count: { $sum: 1 } },
+        },
+      },
     ];
 
     facetStages.stockCount = [{ $match: { totalStock: { $gt: 0 } } }, { $count: 'total' }];
@@ -314,12 +338,16 @@ export const searchProducts = async (query: SearchQuery): Promise<SearchResponse
 
     facets = {
       brands: brandFacets,
-      priceRange: { min: priceData?.min ?? 0, max: priceData?.max ?? 0, avg: Math.round(priceData?.avg ?? 0) },
+      priceRange: {
+        min: priceData?.min ?? 0,
+        max: priceData?.max ?? 0,
+        avg: Math.round(priceData?.avg ?? 0),
+      },
       ratings: ratingBuckets.map((b: any) => ({ rating: b._id, count: b.count })),
       totalInStock: inStockTotal,
     };
   }
-  
+
   const result: SearchResponse = {
     products,
     pagination,
@@ -342,30 +370,48 @@ export const searchProducts = async (query: SearchQuery): Promise<SearchResponse
   };
 
   // 7. Store in Cache
-  try { await redisSet(cacheKey, JSON.stringify(result), CACHE_TTL); } catch { /* Ignore */ }
+  try {
+    await redisSet(cacheKey, JSON.stringify(result), CACHE_TTL);
+  } catch {
+    /* Ignore */
+  }
 
   return result;
 };
 
 /**
- * Autocomplete service. 
+ * Autocomplete service.
  * Uses basic prefix matching which is faster than full-text indexing for partial inputs.
  */
-export const autocomplete = async (prefix: string, limit = 8): Promise<Array<{ _id: string; name: string; slug: string; type: 'product' | 'brand' | 'category' }>> => {
+export const autocomplete = async (
+  prefix: string,
+  limit = 8
+): Promise<
+  Array<{ _id: string; name: string; slug: string; type: 'product' | 'brand' | 'category' }>
+> => {
   if (!prefix || prefix.length < 2) return [];
 
   const regex = new RegExp(`^${escapeRegex(prefix)}`, 'i');
 
   const [products, brands, categories] = await Promise.all([
-    Product.find({ name: regex, status: 'active' }).select('name slug').limit(Math.ceil(limit / 2)).lean(),
+    Product.find({ name: regex, status: 'active' })
+      .select('name slug')
+      .limit(Math.ceil(limit / 2))
+      .lean(),
     Product.distinct('brand', { brand: regex, status: 'active' }),
     Category.find({ name: regex, isActive: true }).select('name slug').limit(3).lean(),
   ]);
 
   const results: any[] = [];
-  products.forEach((p: any) => results.push({ _id: p._id.toString(), name: p.name, slug: p.slug, type: 'product' }));
-  brands.slice(0, 3).forEach((b: string) => results.push({ _id: b, name: b, slug: b, type: 'brand' }));
-  categories.forEach((c: any) => results.push({ _id: c._id.toString(), name: c.name, slug: c.slug, type: 'category' }));
+  products.forEach((p: any) =>
+    results.push({ _id: p._id.toString(), name: p.name, slug: p.slug, type: 'product' })
+  );
+  brands
+    .slice(0, 3)
+    .forEach((b: string) => results.push({ _id: b, name: b, slug: b, type: 'brand' }));
+  categories.forEach((c: any) =>
+    results.push({ _id: c._id.toString(), name: c.name, slug: c.slug, type: 'category' })
+  );
 
   return results.slice(0, limit);
 };
@@ -381,5 +427,7 @@ export const invalidateSearchCache = async (): Promise<void> => {
     // Using SCAN is preferred in production to avoid blocking the Redis event loop
     const keys = await client.keys(`${CACHE_PREFIX}*`);
     if (keys.length > 0) await client.del(keys);
-  } catch { /* Redis unavailable */ }
+  } catch {
+    /* Redis unavailable */
+  }
 };

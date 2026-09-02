@@ -8,7 +8,7 @@ const router = Router();
 // CART OPERATIONS
 // ==========================================
 // These routes support both authenticated and guest users via optionalAuth.
-// Guest carts are typically handled via session IDs or temporary identifiers 
+// Guest carts are typically handled via session IDs or temporary identifiers
 // if the user is not logged in.
 
 // Retrieve the current cart

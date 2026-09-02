@@ -220,10 +220,10 @@ ProductSchema.pre('save', async function () {
 
     // 2. Pricing and Inventory Logic (from active variants)
     if (this.isModified('variants')) {
-      const activeVariants = this.variants.filter((v) => v.isActive);
+      const activeVariants = this.variants.filter(v => v.isActive);
 
       if (activeVariants.length > 0) {
-        const prices = activeVariants.map((v) => v.price);
+        const prices = activeVariants.map(v => v.price);
         this.minPrice = Math.min(...prices);
         this.maxPrice = Math.max(...prices);
         this.totalStock = activeVariants.reduce((sum, v) => sum + v.stock, 0);
@@ -234,7 +234,7 @@ ProductSchema.pre('save', async function () {
       }
 
       // Ensure all SKUs are unique within the product
-      const skus = this.variants.map((v) => v.sku);
+      const skus = this.variants.map(v => v.sku);
       if (new Set(skus).size !== skus.length) {
         throw new Error('Product variants must have unique SKUs');
       }

@@ -1,6 +1,6 @@
 /**
  * WISHLIST SERVICE
- * 
+ *
  * This service manages user wishlists, including retrieval with product details,
  * toggling items (add/remove), and cleanup operations.
  */
@@ -28,9 +28,9 @@ const getOrCreate = async (userId: string): Promise<IWishlist> => {
 
 /**
  * Retrieves the wishlist for a user with pagination.
- * 
- * Note: Since items are stored as an array within the document, we manually 
- * slice the array for pagination before populating product details from the 
+ *
+ * Note: Since items are stored as an array within the document, we manually
+ * slice the array for pagination before populating product details from the
  * Product collection.
  */
 export const getWishlist = async (
@@ -122,18 +122,12 @@ export const isInWishlist = async (userId: string, productId: string): Promise<b
  * Removes a specific product from the wishlist.
  */
 export const removeFromWishlist = async (userId: string, productId: string): Promise<void> => {
-  await Wishlist.findOneAndUpdate(
-    { user: userId }, 
-    { $pull: { items: { product: productId } } }
-  );
+  await Wishlist.findOneAndUpdate({ user: userId }, { $pull: { items: { product: productId } } });
 };
 
 /**
  * Completely clears all items from the user's wishlist.
  */
 export const clearWishlist = async (userId: string): Promise<void> => {
-  await Wishlist.findOneAndUpdate(
-    { user: userId }, 
-    { $set: { items: [] } }
-  );
+  await Wishlist.findOneAndUpdate({ user: userId }, { $set: { items: [] } });
 };

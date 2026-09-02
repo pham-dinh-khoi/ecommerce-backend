@@ -145,7 +145,9 @@ export const getProductReviews = async (
     const isVotedByMe = userId
       ? (r.helpfulVotes?.some((v: any) => v.user.toString() === userId) ?? false)
       : false;
-    const { helpfulVotes, ...rest } = r; // loại bỏ helpfulVotes khỏi output cuối cùng
+    const rest = { ...r };
+    delete rest.helpfulVotes;
+
     return { ...rest, isVotedByMe };
   });
 

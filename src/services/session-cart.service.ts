@@ -1,8 +1,8 @@
 /**
  * CART SERVICE
- * 
- * This service manages session-based shopping carts using Redis for fast, 
- * ephemeral storage. It performs real-time validation against MongoDB to ensure 
+ *
+ * This service manages session-based shopping carts using Redis for fast,
+ * ephemeral storage. It performs real-time validation against MongoDB to ensure
  * cart data (prices, stock, product status) remains consistent with the database.
  */
 
@@ -28,7 +28,7 @@ import type { AddToCartInput, UpdateCartItemInput } from '../validations/cart.va
 const makeKey = (guestId: string) => `${SESSION_CART_PREFIX}${guestId}`;
 
 /**
- * Returns a default empty cart object. 
+ * Returns a default empty cart object.
  * Used as a fallback when a user has no active cart session.
  */
 const emptyCart = (): ISessionCart => ({
@@ -148,7 +148,7 @@ export const sessionAddItem = async (
       );
     }
     existingItem.quantity = newQty;
-    existingItem.price = variant.price; 
+    existingItem.price = variant.price;
     existingItem.stock = variant.stock;
   } else {
     // Select image: Priority to primary variant image, then product image
@@ -216,7 +216,7 @@ export const sessionRemoveItem = async (
 ): Promise<ISessionCart> => {
   const cart = await getSessionCart(guestId);
   const beforeCount = cart.items.length;
-  
+
   cart.items = cart.items.filter(i => i.variantId !== variantId);
   if (cart.items.length === beforeCount) {
     throw new AppError('Item not found in cart', 404);

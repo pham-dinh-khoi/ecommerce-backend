@@ -15,7 +15,7 @@ cloudinary.config({
 
 /**
  * Uploads an image buffer to Cloudinary using a stream.
- * 
+ *
  * @param buffer - The image data
  * @param folder - The Cloudinary folder path
  * @param options - Optional width/height constraints
@@ -33,7 +33,7 @@ export const uploadImage = (
           {
             width: options.width || 1200,
             height: options.height || 1200,
-            crop: 'limit',       // Resize only if larger than dimensions, no cropping
+            crop: 'limit', // Resize only if larger than dimensions, no cropping
             quality: 'auto:good', // Optimal balance of quality and file size
             fetch_format: 'auto', // Serves WebP/AVIF if browser supports it
           },
@@ -83,14 +83,14 @@ export const deleteImages = async (publicIds: string[]): Promise<void> => {
 // ==========================================
 
 /**
- * Generates an on-the-fly thumbnail URL. 
+ * Generates an on-the-fly thumbnail URL.
  * Does not require storing a separate file on the server.
  */
 export const getThumbnailUrl = (publicId: string, width = 300, height = 300): string => {
   return cloudinary.url(publicId, {
     width,
     height,
-    crop: 'fill',      // Fills area, cropping as necessary
+    crop: 'fill', // Fills area, cropping as necessary
     quality: 'auto',
     fetch_format: 'auto',
   });

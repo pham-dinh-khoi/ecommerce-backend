@@ -32,9 +32,9 @@ export const signAccessToken = (userId: string, role: UserRole): string => {
 /**
  * signRefreshToken
  * Generates a long-lived Refresh Token.
- * 
+ *
  * We include a random 'tokenId' (jti). This acts as a unique fingerprint,
- * allowing us to revoke specific sessions/devices without invalidating 
+ * allowing us to revoke specific sessions/devices without invalidating
  * all refresh tokens for a user.
  */
 export const signRefreshToken = (userId: string): { token: string; tokenId: string } => {
@@ -83,9 +83,9 @@ export const verifyRefreshToken = (token: string): IRefreshTokenPayload => {
 /**
  * hashToken
  * Hashes a token using SHA-256 before storage.
- * 
- * DESIGN RATIONALE: We never store raw Refresh Tokens in the database. 
- * If the database is compromised, an attacker cannot use the hashed values 
+ *
+ * DESIGN RATIONALE: We never store raw Refresh Tokens in the database.
+ * If the database is compromised, an attacker cannot use the hashed values
  * to impersonate users. We verify by hashing the incoming token and comparing.
  */
 export const hashToken = (token: string): string => {
@@ -99,7 +99,7 @@ export const hashToken = (token: string): string => {
 /**
  * getRefreshTokenMaxAge
  * Calculates the expiration time in milliseconds for browser cookies.
- * 
+ *
  * Since environment variables are strings (e.g., '7d', '1h'), this parses
  * the string and converts it to a numeric millisecond value used by
  * Express/Cookie-parser.
@@ -109,7 +109,7 @@ export const getRefreshTokenMaxAge = (): number => {
   if (typeof REFRESH_EXPIRES === 'number') {
     return REFRESH_EXPIRES;
   }
-  
+
   // Use Regex to separate the digit from the unit (d, h, m).
   const match = REFRESH_EXPIRES.match(/^(\d+)([dhm])$/);
   if (!match) return 7 * 24 * 60 * 60 * 1000; // Default to 7 days if unparseable
@@ -122,8 +122,8 @@ export const getRefreshTokenMaxAge = (): number => {
   // Conversion map for time units to milliseconds.
   const multipliers: Record<string, number> = {
     d: 86400000, // 1 day = 24 * 60 * 60 * 1000
-    h: 3600000,  // 1 hour = 60 * 60 * 1000
-    m: 60000,    // 1 minute = 60 * 1000
+    h: 3600000, // 1 hour = 60 * 60 * 1000
+    m: 60000, // 1 minute = 60 * 1000
   };
 
   const multiplier = multipliers[unit] || 86400000;

@@ -502,7 +502,7 @@ const updateSoldCount = async (order: IOrder): Promise<void> => {
 
 export const cancelOrderBySystem = async (orderId: string, reason: string): Promise<void> => {
   const order = await Order.findById(orderId);
-  if (!order) return; 
+  if (!order) return;
 
   if (!['pending'].includes(order.status)) return;
 

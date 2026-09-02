@@ -226,7 +226,7 @@ UserSchema.pre('save', function () {
   // Auto-set the first address as default if none exist
   if (defaultAddrs.length === 0 && this.addresses.length > 0) {
     this.addresses[0]!.isDefault = true;
-  } 
+  }
   // Enforce one-default constraint: keep only the last one defined
   else if (defaultAddrs.length > 1) {
     this.addresses.forEach(a => {
@@ -251,7 +251,7 @@ UserSchema.methods.createPasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(32).toString('hex');
   this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   this.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // Valid for 10 mins
-  return resetToken; 
+  return resetToken;
 };
 
 // Create an email verification token

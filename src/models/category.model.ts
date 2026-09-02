@@ -87,7 +87,7 @@ CategorySchema.pre('save', async function () {
   try {
     // 1. Slug processing logic: ensures the slug is unique and URL-friendly
     if (this.isModified('name')) {
-      let baseSlug = slugify(this.name, { lower: true, locale: 'vi' });
+      const baseSlug = slugify(this.name, { lower: true, locale: 'vi' });
       let slug = baseSlug;
       let count = 0;
 

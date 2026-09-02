@@ -38,7 +38,7 @@ interface SendEmailOptions {
 
 /**
  * Generic function to dispatch emails via the configured transporter.
- * 
+ *
  * @param {SendEmailOptions} options - The email details (recipient, subject, body).
  */
 export const sendEmail = async ({ to, subject, html }: SendEmailOptions): Promise<void> => {
@@ -56,14 +56,14 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions): Promis
 
 /**
  * Sends a verification link to a newly registered user.
- * 
+ *
  * @param {string} email - The recipient email address.
  * @param {string} name - The user's name for personalization.
  * @param {string} token - The secure verification token.
  */
 export const sendVerificationEmail = async (email: string, name: string, token: string) => {
   const url = `${env.CLIENT_URL}/verify-email?token=${token}`;
-  
+
   await sendEmail({
     to: email,
     subject: 'Confirm your email address',
@@ -77,14 +77,14 @@ export const sendVerificationEmail = async (email: string, name: string, token: 
 
 /**
  * Sends a password reset instruction email.
- * 
+ *
  * @param {string} email - The user's registered email.
  * @param {string} name - The user's name.
  * @param {string} token - The reset token (valid for 10 minutes).
  */
 export const sendPasswordResetEmail = async (email: string, name: string, token: string) => {
   const url = `${env.CLIENT_URL}/reset-password?token=${token}`;
-  
+
   await sendEmail({
     to: email,
     subject: 'Reset password',
@@ -100,7 +100,7 @@ export const sendPasswordResetEmail = async (email: string, name: string, token:
 /**
  * Sends an invoice/payment confirmation email upon successful order completion.
  * Fetches user details dynamically to ensure the latest data is used.
- * 
+ *
  * @param {any} order - The order object containing payment and user details.
  */
 export const sendPaymentConfirmEmail = async (order: any) => {
@@ -108,7 +108,7 @@ export const sendPaymentConfirmEmail = async (order: any) => {
   const user = await import('../models/user.model.js').then(m =>
     m.User.findById(order.user).select('name email')
   );
-  
+
   if (!user?.email) return;
 
   // Map internal payment method codes to display-friendly labels

@@ -19,7 +19,7 @@ export class AppError extends Error {
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    // 'isOperational' flags this as a trusted error (e.g., validation) 
+    // 'isOperational' flags this as a trusted error (e.g., validation)
     // rather than a programming bug (e.g., null pointer exception).
     this.isOperational = true;
 
@@ -35,9 +35,9 @@ export class AppError extends Error {
 /**
  * catchAsync
  * A higher-order function that wraps async Express controllers.
- * 
+ *
  * Instead of wrapping every controller in a try/catch block, this utility
- * automatically catches any promise rejection and passes the error to the 
+ * automatically catches any promise rejection and passes the error to the
  * next() middleware, which triggers the Global Error Handler.
  */
 export const catchAsync =

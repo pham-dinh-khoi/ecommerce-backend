@@ -2,7 +2,7 @@ import tsEslint from 'typescript-eslint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
-module.exports = [
+export default [
   // 1. Specify the directories/files that do not need to be checked for errors.
   {
     ignores: ['node_modules/', 'dist/', 'uploads/', 'package*.json'],

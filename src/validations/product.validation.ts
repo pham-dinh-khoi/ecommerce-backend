@@ -91,15 +91,15 @@ export const createProductSchema = productBaseFields
   .omit({ variants: true })
   .extend({ variants: z.array(variantSchema).optional().default([]) })
   .refine(
-    (data) => {
-      const skus = data.variants.map((v) => v.sku);
+    data => {
+      const skus = data.variants.map(v => v.sku);
       return new Set(skus).size === skus.length;
     },
     { message: 'SKU của các biến thể không được trùng nhau', path: ['variants'] }
   )
   .refine(
-    (data) => {
-      return data.variants.every((v) => !v.comparePrice || v.comparePrice > v.price);
+    data => {
+      return data.variants.every(v => !v.comparePrice || v.comparePrice > v.price);
     },
     { message: 'Giá gốc phải lớn hơn giá bán', path: ['variants'] }
   );
@@ -118,7 +118,7 @@ export const updateVariantSchema = variantSchema.partial().extend({
 /**
  * productQuerySchema
  * Defines strict filtering rules for product listing pages.
- * 'coerce' is critical here: Query params arrive as strings (e.g., "1"), 
+ * 'coerce' is critical here: Query params arrive as strings (e.g., "1"),
  * and this converts them to numbers automatically.
  */
 export const productQuerySchema = z.object({

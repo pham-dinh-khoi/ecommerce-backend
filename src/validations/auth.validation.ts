@@ -7,13 +7,13 @@ import { z } from 'zod';
 /**
  * passwordSchema
  * We impose a 72-byte limit because bcrypt (the standard hashing algorithm)
- * truncates passwords longer than 72 bytes. Keeping this consistent ensures 
+ * truncates passwords longer than 72 bytes. Keeping this consistent ensures
  * predictable behavior during hashing.
  */
 const passwordSchema = z
   .string({ message: 'Password is required' })
   .min(8, 'Password must be at least 8 characters long')
-  .max(72, 'Password must not exceed 72 characters') 
+  .max(72, 'Password must not exceed 72 characters')
   .regex(/[a-z]/, 'The password requires at least one lowercase letter')
   .regex(/[A-Z]/, 'The password requires at least one uppercase letter')
   .regex(/[0-9]/, 'The password requires at least one number');
@@ -45,7 +45,7 @@ export const registerSchema = z.object({
 
 /**
  * loginSchema
- * Standard login validation. Note: We do not trim or lowercase the password 
+ * Standard login validation. Note: We do not trim or lowercase the password
  * because special characters and casing are required for security.
  */
 export const loginSchema = z.object({
@@ -56,7 +56,7 @@ export const loginSchema = z.object({
 /**
  * changePasswordSchema
  * Uses .refine() for cross-field validation.
- * It ensures the user doesn't accidentally set their new password 
+ * It ensures the user doesn't accidentally set their new password
  * to be the same as their current one.
  */
 export const changePasswordSchema = z
@@ -90,7 +90,7 @@ export const resetPasswordSchema = z.object({
 /**
  * refreshTokenSchema
  * Validation for refresh token rotation.
- * Marked as optional because the token can often be extracted from HttpOnly 
+ * Marked as optional because the token can often be extracted from HttpOnly
  * cookies rather than the request body.
  */
 export const refreshTokenSchema = z.object({

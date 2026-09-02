@@ -1,4 +1,4 @@
-import { Router, raw } from 'express';
+import { Router } from 'express';
 import * as paymentController from '../controllers/payment.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { paymentInitiateLimiter } from '../middleware/ratelimiter.middleware.js';

@@ -13,21 +13,18 @@ export const updateProfileSchema = z.object({
     .max(100, 'Name must not exceed 100 characters')
     .trim()
     .optional(),
-  
+
   // Validation for Vietnamese phone number format
   // Supports formats starting with '0' (local) or '+84' (international)
   phone: z
     .string()
     .regex(/^(0|\+84)\d{9,10}$/, 'Invalid phone number')
     .optional(),
-  
+
   gender: z.enum(['male', 'female', 'other']).optional(),
-  
+
   // Coerce date string from inputs to Date object for validation
-  dateOfBirth: z
-    .coerce.date()
-    .max(new Date(), 'A birth date cannot be in the future')
-    .optional(),
+  dateOfBirth: z.coerce.date().max(new Date(), 'A birth date cannot be in the future').optional(),
 });
 
 // ─── Address Management ─────────────────────────────────────────────────────
@@ -42,26 +39,26 @@ export const addressSchema = z.object({
     .min(1, 'Labels cannot be empty')
     .max(50, 'Labels should not exceed 50 characters')
     .trim(),
-    
+
   recipientName: z
     .string({ message: 'Recipient Name name is required.' })
     .min(2, 'Name must be at least 2 characters long')
     .trim(),
-    
+
   recipientPhone: z
     .string({ message: 'Recipient Phone is required.' })
     .regex(/^(0|\+84)\d{9,10}$/, 'Invalid phone number'),
-    
+
   province: z.string({ message: 'Province/city is required' }).min(1),
   district: z.string({ message: 'District/county is mandatory' }).min(1),
   ward: z.string({ message: 'Ward/commune is mandatory' }).min(1),
-  
+
   streetAddress: z
     .string({ message: 'Street address is required' })
     .min(5, 'Address must be at least 5 characters long')
     .max(200, 'Addresses must not exceed 200 characters')
     .trim(),
-    
+
   // Coerce string input (e.g., "true"/"false") to boolean
   isDefault: z.coerce.boolean().default(false),
 });

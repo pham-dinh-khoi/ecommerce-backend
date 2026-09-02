@@ -125,7 +125,10 @@ const CouponSchema = new Schema<ICoupon>(
       unique: true,
       uppercase: true,
       trim: true,
-      match: [/^[A-Z0-9_-]{3,20}$/, 'Code must contain uppercase letters, numbers, -, _, and be 3-20 chars long'],
+      match: [
+        /^[A-Z0-9_-]{3,20}$/,
+        'Code must contain uppercase letters, numbers, -, _, and be 3-20 chars long',
+      ],
     },
     description: {
       type: String,

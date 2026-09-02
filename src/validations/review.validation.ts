@@ -16,8 +16,8 @@ const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'ID không hợp lệ');
 
 /**
  * createReviewSchema
- * Validates data for creating a new review. 
- * We enforce a minimum length of 20 characters for content to prevent 
+ * Validates data for creating a new review.
+ * We enforce a minimum length of 20 characters for content to prevent
  * low-quality, "spammy" reviews (e.g., "Good", "Ok").
  */
 export const createReviewSchema = z.object({
@@ -41,7 +41,7 @@ export const createReviewSchema = z.object({
 
 /**
  * updateReviewSchema
- * Uses .optional() to allow users to update just one part of their review 
+ * Uses .optional() to allow users to update just one part of their review
  * (e.g., changing the rating) without resubmitting the entire body.
  */
 export const updateReviewSchema = z.object({
@@ -82,9 +82,9 @@ export const replyReviewSchema = z.object({
 /**
  * reviewQuerySchema
  * Used by the public/frontend to fetch reviews.
- * 
- * NOTE: The use of .transform() is critical here. Query parameters arrive 
- * from the URL as strings (e.g., "true"), so this automatically casts them 
+ *
+ * NOTE: The use of .transform() is critical here. Query parameters arrive
+ * from the URL as strings (e.g., "true"), so this automatically casts them
  * into actual JavaScript booleans for your database queries.
  */
 export const reviewQuerySchema = z.object({

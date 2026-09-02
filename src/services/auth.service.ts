@@ -77,10 +77,7 @@ export const login = async (
   // Check account lockout status
   if (user.isLocked()) {
     const remainingMin = Math.ceil((user.lockUntil!.getTime() - Date.now()) / 60000);
-    throw new AppError(
-      `Account temporarily locked. Try again in ${remainingMin} minutes`,
-      423
-    );
+    throw new AppError(`Account temporarily locked. Try again in ${remainingMin} minutes`, 423);
   }
 
   if (!user.isActive) {

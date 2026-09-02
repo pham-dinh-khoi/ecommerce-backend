@@ -26,8 +26,8 @@ import { sendPaymentConfirmEmail } from './email.service.js';
 export const initiatePayment = async (
   orderId: string,
   provider: PaymentProvider,
-  clientIp: string,
-  customerEmail?: string
+  _clientIp: string,
+  _customerEmail?: string
 ): Promise<PaymentUrlResult | StripePaymentIntentResult> => {
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found', 404);

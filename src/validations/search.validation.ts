@@ -107,9 +107,7 @@ export const adminProductQuerySchema = z.object({
   q: z.string().trim().optional(),
   status: z.enum(['draft', 'active', 'inactive', 'archived']).optional(),
   category: objectId.optional(),
-  sort: z
-    .enum(['createdAt', 'updatedAt', 'minPrice', 'soldCount', 'name'])
-    .default('createdAt'),
+  sort: z.enum(['createdAt', 'updatedAt', 'minPrice', 'soldCount', 'name']).default('createdAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
 });
 

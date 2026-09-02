@@ -55,7 +55,9 @@ export const getAddresses = catchAsync(async (req: AuthRequest, res: Response) =
 export const addAddress = catchAsync(async (req: AuthRequest, res: Response) => {
   const data = addressSchema.parse(req.body);
   const user = await userService.addAddress(req.user!.userId, data);
-  res.status(201).json({ success: true, message: 'Address added successfully', data: user.addresses });
+  res
+    .status(201)
+    .json({ success: true, message: 'Address added successfully', data: user.addresses });
 });
 
 export const updateAddress = catchAsync(async (req: AuthRequest, res: Response) => {

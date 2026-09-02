@@ -94,7 +94,7 @@ const checkContent = (title: string, content: string): { flags: string[]; score:
 const checkDuplicate = async (
   userId: string,
   productId: string,
-  content: string
+  _content: string
 ): Promise<{ flags: string[]; score: number }> => {
   const flags: string[] = [];
   let score = 0;

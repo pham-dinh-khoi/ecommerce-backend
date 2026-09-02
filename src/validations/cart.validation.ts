@@ -21,7 +21,7 @@ const objectIdSchema = z
 /**
  * addToCartSchema
  * Validates the payload for adding items to the cart.
- * We use 'z.coerce.number()' because API request bodies often parse numbers 
+ * We use 'z.coerce.number()' because API request bodies often parse numbers
  * as strings (e.g., "1"). Coercion automatically converts "1" to 1.
  */
 export const addToCartSchema = z.object({

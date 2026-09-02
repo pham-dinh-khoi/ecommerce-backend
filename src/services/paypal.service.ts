@@ -216,8 +216,6 @@ export const refund = async (transactionId: string, amount: number): Promise<Ref
     refundId: result.id ?? '',
     amount,
     message:
-      result.status === 'COMPLETED'
-        ? 'Refund successful'
-        : (result.message ?? 'Refund failed'),
+      result.status === 'COMPLETED' ? 'Refund successful' : (result.message ?? 'Refund failed'),
   };
 };
