@@ -17,7 +17,6 @@ const transporter = nodemailer.createTransport({
     user: env.SMTP_USER,
     pass: env.SMTP_PASS,
   },
-  family: 4, // Use IPv4 to avoid potential IPv6 issues
 });
 
 // ==========================================
