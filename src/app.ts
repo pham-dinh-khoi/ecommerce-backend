@@ -6,7 +6,7 @@ import { ZodError } from 'zod';
 
 // --- Middleware & Config Imports ---
 import { globalLimiter } from './middleware/ratelimiter.middleware.js';
-import { env } from './config/env.config.js';
+import { allowedOrigins } from './config/env.config.js';
 import { sanitizeInput } from './middleware/sanitize.middleware.js';
 import { globalErrorHandler, AppError } from './utils/AppError.js';
 
@@ -41,7 +41,21 @@ app.set('trust proxy', 1);
  * globalLimiter: Prevents brute-force/DDoS attacks on the API.
  */
 app.use(helmet());
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Requests with no Origin header (health checks, curl, server-to-server
+      // calls) are not subject to CORS and are always allowed.
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      const error: Error & { statusCode?: number } = new Error('Not allowed by CORS');
+      error.statusCode = 403;
+      callback(error);
+    },
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use('/api', globalLimiter);
 

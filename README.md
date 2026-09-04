@@ -209,7 +209,8 @@ curl http://localhost:5000/api/health
 | --- | --- | --- |
 | `NODE_ENV` | No | `development`, `production`, or `test` |
 | `PORT` | No | Defaults to `5000` |
-| `CLIENT_URL` | No | Frontend origin, such as `http://localhost:5173` |
+| `CLIENT_URL` | No | Primary frontend origin, such as `http://localhost:5173` |
+| `CLIENT_URLS` | No | Comma-separated list of additional allowed CORS origins (each must be an absolute `http`/`https` origin with no path), e.g. `https://ecommerce-pdk-omega-steel.vercel.app,https://ecommerce-frontend-git-perf-initial-loading-phamdinhkhoik3.vercel.app` |
 | `MONGO_URI` | Yes | MongoDB connection string |
 | `JWT_SECRET` | Yes | General secret, minimum 32 characters |
 | `JWT_ACCESS_SECRET` | Yes | Access-token secret, minimum 30 characters |
