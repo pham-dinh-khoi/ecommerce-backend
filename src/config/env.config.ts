@@ -11,6 +11,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(5000),
   CLIENT_URL: z.string().url().default('http://localhost:5000'),
+  // Comma-separated list of additional allowed CORS origins (optional).
+  CLIENT_URLS: z.string().optional(),
 
   // Database Configuration
   MONGO_URI: z
@@ -79,3 +81,47 @@ if (!envParse.success) {
 }
 
 export const env = envParse.data;
+
+// ─── CORS Allowed Origins ────────────────────────────────────────────────────
+// Normalizes a raw origin string into "scheme://host[:port]" form (no trailing
+// slash, no path/query/fragment) and rejects anything that isn't an absolute
+// http(s) origin.
+function normalizeOrigin(raw: string): string {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error(`"${raw}" is not a valid URL`);
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`"${raw}" must use the http or https protocol`);
+  }
+
+  if ((url.pathname !== '/' && url.pathname !== '') || url.search || url.hash) {
+    throw new Error(`"${raw}" must be an origin only (no path, query, or fragment)`);
+  }
+
+  return url.origin;
+}
+
+function parseAdditionalOrigins(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map(value => value.trim())
+    .filter(value => value.length > 0)
+    .map(normalizeOrigin);
+}
+
+let allowedOrigins: string[];
+try {
+  const origins = [env.CLIENT_URL, ...parseAdditionalOrigins(env.CLIENT_URLS)].map(normalizeOrigin);
+  allowedOrigins = Array.from(new Set(origins));
+} catch (error) {
+  console.error('Invalid CORS origin configuration (CLIENT_URL / CLIENT_URLS)');
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}
+
+export { allowedOrigins };
